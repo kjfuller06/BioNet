@@ -2,7 +2,7 @@
 .libPaths("C:/Users/90946112/R/win-library/3.6.2")
 library(tidyverse)
 
-flora <- read.delim("Do Not Sync/BioNet_allflorasurvey.txt", header = TRUE, sep = "\t", dec = ".")
+flora <- read.delim("data samples/BioNet_allflorasurvey.txt", header = TRUE, sep = "\t", dec = ".")
 sample2 <- flora %>% 
   dplyr::filter(is.na(CoverScore)==FALSE|is.na(AbundanceScore)==FALSE|is.na(PercentCover)==FALSE|is.na(LowerHeight)==FALSE|is.na(UpperHeight)==FALSE) %>% 
   dplyr::filter(grepl("Eucalyptus", Assgn_ScientificName))
@@ -16,5 +16,5 @@ for (i in sample2[,44:48]){
   a = a+1
   }
 
-write.csv(sample2,"Do Not Sync/all_minus_P-A_data.csv")
+write.csv(sample2,"data samples/all_minus_P-A_data.csv")
 
