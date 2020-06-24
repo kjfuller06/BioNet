@@ -6,6 +6,8 @@
 .libPaths("C:/Users/90946112/R/win-library/3.6.2")
 library(tidyverse)
 library(sf)
+library(raster)
+library(tmap)
 
 # load dataset
 flora <- read.csv("data samples/all_minus_P-A_data.csv", header = TRUE)
@@ -39,17 +41,36 @@ length(flora2$DateLast[flora2$DateLast == "1970-01-01"])
 
 # I took a look at these dates to see why the starting and ending dates don't match. Many records(all?) with the start date 1970-01-01 list an end date in 2011. This was a random selection so there could be further, similar issues. This could also be an error resulting from date format conversion. Let's look at the original df
 datecheck = flora %>% 
-  filter(DateFirst == "01/01/1970")
-summary(droplevels(datecheck))
-## not a problem for the original data. All records with a start date of 1970-01-01 have an end date of either 30/06/2011 (2378 records) or 31/01/2000 (9 records)
+  filter(DateFirst == "01/01/1970") %>% 
+  droplevels() %>% 
+  st_as_sf(coords = c("Longitude_GDA94", "Latitude_GDA94"), 
+           crs = 4283, agr = "identity")
+## not a problem for the original data. All records with a start date of 1970-01-01 have an end date of either 30/06/2011 (2378 records) or 31/01/2000 (9 records). So what is going on here? Are these return plots or is the date of the survey unknown?
+dplyr::filter(ccodes(), NAME %in% "Australia")
+aus = getData("GADM", country = "AUS", level = 1) %>% 
+  st_as_sf(aus) %>% 
+  filter(NAME_1 == "New South Wales")
+## these data shouldn't be committed but I don't know how to nest them in the data sample/ folder
 
+# create interactive map of data points from 01-01-1970
+# tmap_mode("view")
+# qtm(aus) + qtm(datecheck)
+## ok, the plots are not clustered
 
-# 7205 unique first dates
-length(unique(flora2$DateFirst))
-# 7206 unique last dates
-length(unique(flora2$DateLast))
-# 59438 unique plot locations
-length(unique(flora2$LocationKey))
+# Ok, I really don't know what the smallest denomination is within the unique identifiers. I need one that identifies unique survey & subplotID (-replicate) and one that identifies a location full stop. Survey and location date are contained in "ï..DatasetName", SightingKey, LocationKey, SurveyName, CensusKey, SiteNo, ReplicateNo and SubplotID
+# let's take a look at each in turn, starting with counts.
+sumflora = data.frame(types = c("total", "datasetname", "sightingkey", "locationkey", "surveyname", "censuskey", "siteno", "replicateno", "subplotid"), obs = c(1, 2, 3, 4, 5, 6, 7, 8, 9))
+sumflora[1, 2] = nrow(flora)
+a = 2
+for (i in c(2, 3, 27, 37, 38, 40:42)){
+  sumflora[a, 2] = length(unique(flora[,i]))
+  a = a+1
+}
+sumflora
+
+# unique(sightingkey) is the same length as the whole dataset so that's useless.
+# locationkey is almost = siteno. I will keep locationkey because there are two more.
+
 
 # check to see if all plots listed with the same LocationKey have identical lat/lon coordinates. If not, take a look at the points and qualitatively assess a few. Maybe throw out any coordinates before 1990 as well.
 
