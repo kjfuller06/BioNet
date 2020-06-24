@@ -1,4 +1,6 @@
-## there's a variable I haven't examined I might want to include, which is NumberIndividuals
+# Script is for checking suspicious data in a subset of BioNet flora survey data concerning cover and abundance estimates of Eucalypts species only. This subset has been coined "P-A" for Presence-Absence, meaning these surveys can be used to generate presence/absence data for species distribution modeling.
+
+# there's a variable I haven't examined I might want to include in the final subset, which is NumberIndividuals
 
 # assign library path
 .libPaths("C:/Users/90946112/R/win-library/3.6.2")
