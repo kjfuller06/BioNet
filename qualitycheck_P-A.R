@@ -113,6 +113,7 @@ all(flora$ScientificName == flora$Assgn_ScientificName)
 mismatch = flora %>% 
   filter(as.character(ScientificName) != as.character(Assgn_ScientificName))
 summary(mismatch)
+## scrolled through enough to be confident that Assgn_ScientificName is the accepted/corrected version of whatever was entered in ScientificName
 
 # # convert to simple feature, with crs of GDA94 and the attributes being identifications
 # map1 = st_as_sf(flora, coords = c("Longitude_GDA94", "Latitude_GDA94"), 
