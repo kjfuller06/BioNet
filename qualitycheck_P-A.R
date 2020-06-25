@@ -8,6 +8,7 @@ library(tidyverse)
 library(sf)
 library(raster)
 library(tmap)
+library(vctrs)
 
 # load dataset
 flora <- read.csv("data samples/all_minus_P-A_data.csv", header = TRUE)
@@ -93,6 +94,25 @@ for (i in c(2, 3, 19, 20, 27, 29, 30, 37, 38, 40:42)){
 sumflora
 ## LocationKey is longer than lat/lon so presumably there are duplicate coordinates for some LocationKey's
 ## There are more LocationKey's than dates, which makes sense. Do I need to know how many repeated measures there are? Should I grop them by 10m buffer?
+
+# Check scientific names- are there cases where ScientificName and Assgn_ScientificName do not match?
+nms = flora %>% 
+  dplyr::select(ScientificName, CommonName, Assgn_ScientificName, Assgn_CommonName)
+nms2 = data.frame(types = c("tot", names(nms)), obs = c(1, 2, 3, 4, 5))
+nms2[1, 2] = nrow(nms)
+a = 2
+for (i in c(1:4)){
+  nms2[a, 2] = length(unique(nms[,i]))
+  a = a+1
+}
+nms2
+## slightly different numbers of different names. 
+# Let's check out the mis-matches
+all(flora$ScientificName == flora$Assgn_ScientificName)
+## returns an error because factor levels differ, which effectly gives the answer
+mismatch = flora %>% 
+  filter(as.character(ScientificName) != as.character(Assgn_ScientificName))
+summary(mismatch)
 
 # # convert to simple feature, with crs of GDA94 and the attributes being identifications
 # map1 = st_as_sf(flora, coords = c("Longitude_GDA94", "Latitude_GDA94"), 
