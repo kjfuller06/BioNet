@@ -70,12 +70,15 @@ sumflora
 
 # unique(sightingkey) is the same length as the whole dataset so that's useless.
 # locationkey is almost = siteno. Let me check the coordinates
+sites = flora %>% 
+  dplyr::select(LocationKey, SiteNo)
+sites = unique(sites)
 a = duplicated(sites$LocationKey)
 dup = sites[a,]
 dup
 b = flora[flora$LocationKey %in% dup$LocationKey,] %>% 
-  dplyr::select(LocationKey, SiteNo, Latitude_GDA94, Longitude_GDA94,)
-## coordinates are all based on LocationKey so I'll throw out SiteNo.
+  dplyr::select(LocationKey, SiteNo, Latitude_GDA94, Longitude_GDA94, DateFirst, DateLast)
+## coordinates are all based more on LocationKey than SiteNo
 # check that there are no other duplicates of lat/lon so that LocationKey is a unique ID of lat/lon coordinates. Also check the time indices for there being different time points (could be tied to SiteNo duplicates)
 sumflora = data.frame(types = c("total", "datasetname", "sightingkey", "date1", "date2", "locationkey", "lat", "lon", "surveyname", "censuskey", "siteno", "replicateno", "subplotid"), obs = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13))
 sumflora[1, 2] = nrow(flora)
@@ -85,10 +88,8 @@ for (i in c(2, 3, 19, 20, 27, 29, 30, 37, 38, 40:42)){
   a = a+1
 }
 sumflora
-
-
-# check to see if all plots listed with the same LocationKey have identical lat/lon coordinates. If not, take a look at the points and qualitatively assess a few. Maybe throw out any coordinates before 1990 as well.
-
+## LocationKey is longer than lat/lon so presumably there are duplicate coordinates for some LocationKey's
+## There are more LocationKey's than dates, which makes sense. Do I need to know how many repeated measures there are? Should I grop them by 10m buffer?
 
 # # convert to simple feature, with crs of GDA94 and the attributes being identifications
 # map1 = st_as_sf(flora, coords = c("Longitude_GDA94", "Latitude_GDA94"), 
