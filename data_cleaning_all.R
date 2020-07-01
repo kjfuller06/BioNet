@@ -4,6 +4,7 @@
 #   3. Remove all instances except those in which Accuracy is less than 1km (1000m according to native units)
 #   4. Remove all instances except those in which the difference between start and end dates is less than 7 days
 #   5. Remove all instances except those listed as "accepted"
+#   6. Remove all instances except those in which percent cover is less than or equal to 100
 
 # assign library path
 .libPaths("C:/Users/90946112/R/win-library/3.6.2")
@@ -54,6 +55,12 @@ flora = flora %>%
 # 5. ####
 flora = flora %>% 
   filter(grepl("accepted", Status, ignore.case = TRUE))
+
+backup = flora
+
+# 6. ####
+flora = flora %>% 
+  filter(PercentCover <= 100 & PercentCover > 0)
 
 # write to csv ####
 write.csv(flora, file = "data samples/BioNet_allflorasurvey_cleaned.csv")
