@@ -44,7 +44,12 @@ timefunction <- function(x) as.Date(x, format="%Y-%m-%d")
 flora[c("DateFirst","DateLast")] = lapply(flora[c("DateFirst", "DateLast")], timefunction)
 
 # 3. ####
+flora = flora %>% 
+  filter(ObservationType == "J")
 
+# 4. ####
+flora = flora %>% 
+  filter(Accuracy <= 10)
 
 # # convert to simple feature, with crs of GDA94 and the attributes being identifications
 # map1 = st_as_sf(flora, coords = c("Longitude_GDA94", "Latitude_GDA94"), 
