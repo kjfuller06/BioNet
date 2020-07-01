@@ -3,6 +3,7 @@
 #   2. Drop all columns not relevant to (most) species distribution modeling
 #   3. Remove all instances except those in which Accuracy is less than 1km (1000m according to native units)
 #   4. Remove all instances except those in which the difference between start and end dates is less than 7 days
+#   5. Remove all instances except those listed as "accepted"
 
 # assign library path
 .libPaths("C:/Users/90946112/R/win-library/3.6.2")
@@ -49,6 +50,10 @@ flora = flora %>%
 # 4. ####
 flora = flora %>% 
   filter(DateLast - DateFirst < 8)
+
+# 5. ####
+flora = flora %>% 
+  filter(grepl("accepted", Status, ignore.case = TRUE))
 
 # write to csv ####
 write.csv(flora, file = "data samples/BioNet_allflorasurvey_cleaned.csv")
