@@ -1,15 +1,15 @@
 ## This file is for selecting useful columns and performing some common cleaning processes that could be useful for other scientists at the HIE and outside as well. The workflow is as follows:
 #   1. Load dataset
 #   2. Drop all columns not relevant to my species distribution modeling
-#   3. Remove all instances except those in which Accuracy is less than 10m
-#   4. Remove all instances except those originating since 1990
-#   5. Remove all instances except those listed as observation type == "J"- Floristic Record from Systematic Flora Survey
+#   3. Remove all instances except those listed as observation type == "J"- Floristic Record from Systematic Flora Survey
+#   4. Remove all instances except those in which Accuracy is less than or equal to 10m
+#   5. Remove all instances except those originating since 1990
 
 # assign library path
 .libPaths("C:/Users/90946112/R/win-library/3.6.2")
 library(tidyverse)
 
-# load dataset and keep only the columns of interest
+# 1. & 2. ####
 flora <- read.csv("data samples/BioNet_allflorasurvey_cleaned.csv", header = TRUE) %>% 
   dplyr::select(Assgn_ScientificName, 
                 DateFirst,
@@ -43,6 +43,7 @@ backup2 = flora
 timefunction <- function(x) as.Date(x, format="%Y-%m-%d")
 flora[c("DateFirst","DateLast")] = lapply(flora[c("DateFirst", "DateLast")], timefunction)
 
+# 3. ####
 
 
 # # convert to simple feature, with crs of GDA94 and the attributes being identifications
