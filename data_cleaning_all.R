@@ -50,7 +50,8 @@ flora = flora %>%
 flora = flora %>% 
   filter(DateLast - DateFirst < 8)
 
-
+# write to csv ####
+write.csv(flora, file = "data samples/BioNet_allflorasurvey_cleaned.csv")
 
 
 
