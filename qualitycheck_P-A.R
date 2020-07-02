@@ -6,8 +6,7 @@
 #   5. Examine plot IDs to determine what they actually identify and how many unique values there are for each
 #     -> 5.1. Look at Stratum to see if any existing ID's map to the ID I want
 ##        -> No ID maps to unique combinations of dates and lat/lon coordinates
-##        -> If dates, lat/lon coordinates and SiteNo is included, it is only 3 values short of CensusKey
-#     -> 5.2. Created unique ID for each combination of dates and lat/lon coordinates, then examine the duplicates- especially the Accuracy
+#     -> 5.2. Created unique ID for each combination of dates and lat/lon coordinates, then examine other combinations of variables
 #   6. Determine if the scientific name columns match
 
 # assign library path
@@ -91,7 +90,7 @@ b = flora[flora$LocationKey %in% dup$LocationKey,] %>%
 b
 ## *SiteNo changes with the date* but lat/lon and LocationKey don't always.
 
-# 5.1.
+# 5.1. & 5.2
 # Extract just the ID variables and Stratum. Look at the length of unique values of each variable for just the Stratum-relevant records
 # SightingKey thrown out because it's the same length as flora
 # LocationKey also out because it doesn't always change with date and I want discrete measurements
@@ -105,18 +104,17 @@ for (i in c(2, 19, 20, 29, 30, 37, 38, 40:42)){
 }
 strata
 
-# Determine if any variables equal the length of lat/lon + dates
+# Look at combinations of location IDs. What do they mean?
 strata[12, 2] = nrow(unique(stratdf[c("DateFirst", "DateLast", "Latitude_GDA94", "Longitude_GDA94")]))
 ## 14,691
-strata[13, 2] = nrow(unique(stratdf[c("DateFirst", "DateLast", "Latitude_GDA94", "Longitude_GDA94", "SiteNo", "ReplicateNo", "SubplotID")]))
+strata[13, 2] = nrow(unique(stratdf[c("DateFirst", "DateLast", "Latitude_GDA94", "Longitude_GDA94", "SiteNo")]))
 ## 17,178
 strata[14, 2] = nrow(unique(stratdf[c("DateFirst", "DateLast", "Latitude_GDA94", "Longitude_GDA94", "SiteNo", "ReplicateNo", "SubplotID", "Stratum")]))
 ## 19,477
-strata[15, 2] = nrow(unique(stratdf[c("ï..DatasetName", "DateFirst", "DateLast", "Latitude_GDA94", "Longitude_GDA94", "SurveyName", "CensusKey", "SiteNo", "ReplicateNo", "SubplotID", "Stratum")]))
+strata[15, 2] = nrow(unique(stratdf[c("ï..DatasetName", "DateFirst", "DateLast", "LocationKey", "Latitude_GDA94", "Longitude_GDA94", "SurveyName", "CensusKey", "SiteNo", "ReplicateNo", "SubplotID", "Stratum")]))
 ## exactly the same
 strata
 ## I've gotten quite close here. Combination 14 seems to be the smallest denomination outside of actual sighting records
-
 
 # Add unique values from 13 to CensusKey and look at duplicates
 # Create a unique key for the following variable combinations
@@ -134,14 +132,6 @@ census_dup = census_dup %>%
 census_dup2 = left_join(census_dup, stratdf)
 write.csv(census_dup2, file = "data samples/CensusKeyduplicates.csv")
 ## Need to examine further but it looks like the duplicates are the result of replicates and subplots
-
-
-
-# 5.2.
-# 
-
-
-
 
 # 6. ####
 # Check scientific names- are there cases where ScientificName and Assgn_ScientificName do not match?
