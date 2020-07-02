@@ -30,7 +30,7 @@ options
 
 # 3. ####
 # convert Date First to three columns in a data frame
-datecheck = as.data.frame(stringr::str_split_fixed(as.character(flora2$DateFirst), pattern = "/", n = 3))
+datecheck = as.data.frame(stringr::str_split_fixed(as.character(flora$DateFirst), pattern = "/", n = 3))
 length(datecheck$V3[datecheck$V3 == 1970])
 ## 126 records for 1970
 # check for 126 records of the date 01/01/1970
