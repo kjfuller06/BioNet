@@ -96,7 +96,7 @@ b
 # SightingKey thrown out because it's the same length as flora
 # LocationKey also out because it doesn't always change with date and I want discrete measurements
 stratdf = flora[flora$Stratum != "-",]
-strata = data.frame(types = c("stratum", "datasetname", "date1", "date2", "lat", "lon", "surveyname", "censuskey", "siteno", "replicateno", "subplotid", "unique_test"), obs = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12))
+strata = data.frame(types = c("stratum", "datasetname", "date1", "date2", "lat", "lon", "surveyname", "censuskey", "siteno", "replicateno", "subplotid", "test_dp", "test_dps", "test_dpss", "test_all_locIDs"), obs = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15))
 strata[1, 2] = nrow(stratdf)
 a = 2
 for (i in c(2, 19, 20, 29, 30, 37, 38, 40:42)){
@@ -106,28 +106,39 @@ for (i in c(2, 19, 20, 29, 30, 37, 38, 40:42)){
 strata
 
 # Determine if any variables equal the length of lat/lon + dates
-strata[12, 2] = nrow(unique(stratdf[c("DateFirst", "DateLast", "Latitude_GDA94", "Longitude_GDA94", "SiteNo")]))
+strata[12, 2] = nrow(unique(stratdf[c("DateFirst", "DateLast", "Latitude_GDA94", "Longitude_GDA94")]))
+## 14,691
+strata[13, 2] = nrow(unique(stratdf[c("DateFirst", "DateLast", "Latitude_GDA94", "Longitude_GDA94", "SiteNo", "ReplicateNo", "SubplotID")]))
+## 17,178
+strata[14, 2] = nrow(unique(stratdf[c("DateFirst", "DateLast", "Latitude_GDA94", "Longitude_GDA94", "SiteNo", "ReplicateNo", "SubplotID", "Stratum")]))
+## 19,477
+strata[15, 2] = nrow(unique(stratdf[c("ï..DatasetName", "DateFirst", "DateLast", "Latitude_GDA94", "Longitude_GDA94", "SurveyName", "CensusKey", "SiteNo", "ReplicateNo", "SubplotID", "Stratum")]))
+## exactly the same
 strata
-## I've gotten quite close here. This combination's length is only 3 short of the length of CensusKey
+## I've gotten quite close here. Combination 14 seems to be the smallest denomination outside of actual sighting records
 
-# Look at CensusKey duplicates
+
+# Add unique values from 13 to CensusKey and look at duplicates
 # Create a unique key for the following variable combinations
-unique_dateplacesite = unique(stratdf[c("DateFirst", "DateLast", "Latitude_GDA94", "Longitude_GDA94", "SiteNo")])
-unique_dateplacesite$ID = seq_len(nrow(unique_kjfIDs))
-# Merge with stratum-relevant records
-stratdf_dup = left_join(stratdf, unique_dateplacesite)
-# Extract duplicates of the new ID
-a = duplicated(stratdf_dup$ID)
-dup = stratdf_dup[a,c(2, 19, 20, 29, 30, 34, 37, 38, 40:42)]
-summary(dup)
-b = count(dup$SiteNo) %>% 
-  top_n(10) %>% 
-  left_join(dup, by = c("x" = "SiteNo"))
-summary(b)
+unique_dps = unique(stratdf[c("DateFirst", "DateLast", "Latitude_GDA94", "Longitude_GDA94", "SiteNo")])
+unique_dps$ID = seq_len(nrow(unique_kjfIDs))
+# select only unique_dps and censuskey and identify duplicates of unique_dps in the new df. Then just look at these.
+census_dup = left_join(stratdf, unique_dps) %>% 
+  dplyr::select("CensusKey", "ID") %>% 
+  unique()
+census_dup$ID = as.factor(census_dup$ID)
+b = count(census_dup$ID) %>% 
+  top_n(2)
+census_dup = census_dup %>%
+  filter(ID == b$x[1] | ID == b$x[2])
+census_dup2 = left_join(census_dup, stratdf)
+write.csv(census_dup2, file = "data samples/CensusKeyduplicates.csv")
+## Need to examine further but it looks like the duplicates are the result of replicates and subplots
+
 
 
 # 5.2.
-# Create a unique ID for each combination of lat/lon and the dates.
+# 
 
 
 
