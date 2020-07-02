@@ -34,11 +34,11 @@ datecheck = as.data.frame(stringr::str_split_fixed(as.character(flora$DateFirst)
 length(datecheck$V3[datecheck$V3 == 1970])
 ## 126 records for 1970
 # check for 126 records of the date 01/01/1970
-flora2$DateFirst <- as.Date(flora2$DateFirst, format = "%d/%m/%Y")
-length(flora2$DateFirst[flora2$DateFirst == "1970-01-01"])
+flora2$DateFirst <- as.Date(flora$DateFirst, format = "%d/%m/%Y")
+length(flora2$DateFirst[flora$DateFirst == "1970-01-01"])
 ## confirmed
-flora2$DateLast <- as.Date(flora2$DateLast, format = "%d/%m/%Y")
-length(flora2$DateLast[flora2$DateLast == "1970-01-01"])
+flora2$DateLast <- as.Date(flora$DateLast, format = "%d/%m/%Y")
+length(flora2$DateLast[flora$DateLast == "1970-01-01"])
 ## 0 records of 1970-01-01
 
 # 4. ####
