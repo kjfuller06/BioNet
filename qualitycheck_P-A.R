@@ -108,16 +108,14 @@ for (i in c(1:4)){
 nms2
 ## slightly different numbers of different names. 
 # Let's check out the mis-matches
-all(flora$ScientificName == flora$Assgn_ScientificName)
+# all(flora$ScientificName == flora$Assgn_ScientificName)
 ## returns an error because factor levels differ, which effectly gives the answer
 mismatch = flora %>% 
   filter(as.character(ScientificName) != as.character(Assgn_ScientificName))
 summary(mismatch)
 ## scrolled through enough to be confident that Assgn_ScientificName is the accepted/corrected version of whatever was entered in ScientificName
 
-# # convert to simple feature, with crs of GDA94 and the attributes being identifications
-# map1 = st_as_sf(flora, coords = c("Longitude_GDA94", "Latitude_GDA94"), 
-#          crs = 4283, agr = "identity")
+# next identify whatever key delineates a single date and location. This will be necessary for linking strata stats from a given survey.
 
 
 
