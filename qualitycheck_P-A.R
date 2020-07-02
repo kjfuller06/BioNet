@@ -1,6 +1,11 @@
-# Script is for checking suspicious data in a subset of BioNet flora survey data concerning cover and abundance estimates of Eucalypts species only. This subset has been coined "P-A" for Presence-Absence, meaning these surveys can be used to generate presence/absence data for species distribution modeling.
-
-# there's a variable I haven't examined I might want to include in the final subset, which is NumberIndividuals
+# Script is for checking suspicious data in a subset of BioNet flora survey data concerning cover and abundance estimates of Eucalypts species only. This subset has been coined "P-A" for Presence-Absence, meaning these surveys can be used to generate presence/absence data for species distribution modeling. Workflow is as follows:
+#   1. Load dataset
+#   2. Determine the number of observations (i.e. non-NA entries) for the various cover and abundance measurements
+#   3. Check that start and end dates always match -> they do not
+#   4. Examine the dates from 1970- many of these have end dates in the 2000s
+#   5. Examine plot IDs to determine what they actually identify and how many unique values there are for each
+#     -> unsuccessful
+#   6. Determine if the scientific name columns match
 
 # assign library path
 .libPaths("C:/Users/90946112/R/win-library/3.6.2")
@@ -10,24 +15,20 @@ library(raster)
 library(tmap)
 library(vctrs)
 
-# load dataset
+# 1. ####
 flora <- read.csv("data samples/all_minus_P-A_data.csv", header = TRUE)
 
-# determine the number of observations in each cover estimate metric
-options = data.frame(types = names(flora[,45:49]), obs = c(1, 2, 3, 4, 5))
+# 2. ####
+options = data.frame(types = names(flora[,c(21,45:49)]), obs = c(1, 2, 3, 4, 5, 6))
 a = 1
-for (i in flora[,45:49]){
+for (i in flora[,c(21,45:49)]){
   b = i
   options[a, 2] = length(b[is.na(b) == FALSE])
   a = a+1
 }
 options
 
-# select only the unique plot IDs. There are 59,438 survey plots.
-flora2 = flora %>% 
-  dplyr::select(DateFirst, DateLast, LocationKey, Latitude_GDA94, Longitude_GDA94, Accuracy, Stratum, GrowthForm, CoverScore, AbundanceScore, PercentCover, LowerHeight, UpperHeight) %>% 
-  filter(Accuracy <= 10)
-
+# 3. ####
 # convert Date First to three columns in a data frame
 datecheck = as.data.frame(stringr::str_split_fixed(as.character(flora2$DateFirst), pattern = "/", n = 3))
 length(datecheck$V3[datecheck$V3 == 1970])
@@ -40,36 +41,38 @@ flora2$DateLast <- as.Date(flora2$DateLast, format = "%d/%m/%Y")
 length(flora2$DateLast[flora2$DateLast == "1970-01-01"])
 ## 0 records of 1970-01-01
 
-# I took a look at these dates to see why the starting and ending dates don't match. Many records(all?) with the start date 1970-01-01 list an end date in 2011. This was a random selection so there could be further, similar issues. This could also be an error resulting from date format conversion. Let's look at the original df
+# 4. ####
+# This could also be an error resulting from date format conversion. Let's look at the original df
 datecheck = flora %>% 
   filter(DateFirst == "01/01/1970") %>% 
   droplevels() %>% 
   st_as_sf(coords = c("Longitude_GDA94", "Latitude_GDA94"), 
            crs = 4283, agr = "identity")
-## not a problem for the original data. All records with a start date of 1970-01-01 have an end date of either 30/06/2011 (2378 records) or 31/01/2000 (9 records). So what is going on here? Are these return plots or is the date of the survey unknown?
-dplyr::filter(ccodes(), NAME %in% "Australia")
-aus = getData("GADM", country = "AUS", level = 1) %>% 
-  st_as_sf(aus) %>% 
-  filter(NAME_1 == "New South Wales")
-## these data shouldn't be committed but I don't know how to nest them in the data sample/ folder
+## Not a problem for the original data. 
+## All records with a start date of 1970-01-01 have an end date of either 30/06/2011 (2378 records) or 31/01/2000 (9 records)
 
+# Are these return plots or is the date of the survey unknown?
+# dplyr::filter(ccodes(), NAME %in% "Australia")
+# aus = getData("GADM", country = "AUS", level = 1) %>% 
+#   st_as_sf(aus) %>% 
+#   filter(NAME_1 == "New South Wales")
 # create interactive map of data points from 01-01-1970
 # tmap_mode("view")
 # qtm(aus) + qtm(datecheck)
 ## ok, the plots are not clustered
 
-# Ok, I really don't know what the smallest denomination is within the unique identifiers. I need one that identifies unique survey & subplotID (-replicate) and one that identifies a location full stop. Survey and location date are contained in "ï..DatasetName", SightingKey, LocationKey, SurveyName, CensusKey, SiteNo, ReplicateNo and SubplotID
-# let's take a look at each in turn, starting with counts.
-sumflora = data.frame(types = c("total", "datasetname", "sightingkey", "locationkey", "surveyname", "censuskey", "siteno", "replicateno", "subplotid"), obs = c(1, 2, 3, 4, 5, 6, 7, 8, 9))
+# 5. ####
+# What I need for an analysis is a unique identifier for each unique combination of date, location, site, replicate(?) and subplot
+sumflora = data.frame(types = c("total", "datasetname", "sightingkey", "date1", "date2", "locationkey", "lat", "lon", "surveyname", "censuskey", "siteno", "replicateno", "subplotid"), obs = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13))
 sumflora[1, 2] = nrow(flora)
 a = 2
-for (i in c(2, 3, 27, 37, 38, 40:42)){
+for (i in c(2, 3, 19, 20, 27, 29, 30, 37, 38, 40:42)){
   sumflora[a, 2] = length(unique(flora[,i]))
   a = a+1
 }
 sumflora
-
-# unique(sightingkey) is the same length as the whole dataset so that's useless.
+## unique(sightingkey) is the same length as the whole dataset so that's useless.
+## LocationKey is longer than lat/lon. LocationKey is also longer than than the dates
 # locationkey is almost = siteno. Let me check the coordinates. Also check the time indices for there being different time points (could be tied to SiteNo duplicates)
 sites = flora %>% 
   dplyr::select(LocationKey, SiteNo)
@@ -79,22 +82,11 @@ dup = sites[a,]
 dup
 b = flora[flora$LocationKey %in% dup$LocationKey,] %>% 
   dplyr::select(LocationKey, SiteNo, Latitude_GDA94, Longitude_GDA94, DateFirst, DateLast)
-## coordinates are all based more on LocationKey than SiteNo
-## Date change accounts for at least one of the LocationKey duplicates, where the SiteNo changes with the date but the coordinates don't change.
-### what I should probably do is just generate a unique key for coordinate + date combinations so it's obvious what I'm looking at.
+b
+## *SiteNo changes with the date* but lat/lon and LocationKey don't always.
+### what I should probably do is just generate my own unique key
 
-# check that there are no other duplicates of lat/lon so that LocationKey is a unique ID of lat/lon coordinates. 
-sumflora = data.frame(types = c("total", "datasetname", "sightingkey", "date1", "date2", "locationkey", "lat", "lon", "surveyname", "censuskey", "siteno", "replicateno", "subplotid"), obs = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13))
-sumflora[1, 2] = nrow(flora)
-a = 2
-for (i in c(2, 3, 19, 20, 27, 29, 30, 37, 38, 40:42)){
-  sumflora[a, 2] = length(unique(flora[,i]))
-  a = a+1
-}
-sumflora
-## LocationKey is longer than lat/lon so presumably there are duplicate coordinates for some LocationKey's
-## There are more LocationKey's than dates, which makes sense. Do I need to know how many repeated measures there are? Should I grop them by 10m buffer?
-
+# 6. ####
 # Check scientific names- are there cases where ScientificName and Assgn_ScientificName do not match?
 nms = flora %>% 
   dplyr::select(ScientificName, CommonName, Assgn_ScientificName, Assgn_CommonName)
@@ -107,6 +99,7 @@ for (i in c(1:4)){
 }
 nms2
 ## slightly different numbers of different names. 
+
 # Let's check out the mis-matches
 # all(flora$ScientificName == flora$Assgn_ScientificName)
 ## returns an error because factor levels differ, which effectly gives the answer
@@ -114,8 +107,4 @@ mismatch = flora %>%
   filter(as.character(ScientificName) != as.character(Assgn_ScientificName))
 summary(mismatch)
 ## scrolled through enough to be confident that Assgn_ScientificName is the accepted/corrected version of whatever was entered in ScientificName
-
-# next identify whatever key delineates a single date and location. This will be necessary for linking strata stats from a given survey.
-
-
 
