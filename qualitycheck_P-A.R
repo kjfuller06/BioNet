@@ -4,7 +4,10 @@
 #   3. Check that start and end dates always match -> they do not
 #   4. Examine the dates from 1970- many of these have end dates in the 2000s
 #   5. Examine plot IDs to determine what they actually identify and how many unique values there are for each
-#     -> unsuccessful
+#     -> 5.1. Look at Stratum to see if any existing ID's map to the ID I want
+##        -> No ID maps to unique combinations of dates and lat/lon coordinates
+##        -> If dates, lat/lon coordinates and SiteNo is included, it is only 3 values short of CensusKey
+#     -> 5.2. Created unique ID for each combination of dates and lat/lon coordinates, then examine the duplicates- especially the Accuracy
 #   6. Determine if the scientific name columns match
 
 # assign library path
@@ -14,6 +17,7 @@ library(sf)
 library(raster)
 library(tmap)
 library(vctrs)
+library(plyr)
 
 # 1. ####
 flora <- read.csv("data samples/all_minus_P-A_data.csv", header = TRUE)
@@ -74,7 +78,8 @@ for (i in c(2, 3, 19, 20, 27, 29, 30, 37, 38, 40:42)){
 sumflora
 ## unique(sightingkey) is the same length as the whole dataset so that's useless.
 ## LocationKey is longer than lat/lon. LocationKey is also longer than than the dates
-# locationkey is almost = siteno. Let me check the coordinates. Also check the time indices for there being different time points (could be tied to SiteNo duplicates)
+## locationkey is almost = siteno. 
+# Check the coordinates. Also check the time indices for there being different time points (could be tied to SiteNo duplicates)
 sites = flora %>% 
   dplyr::select(LocationKey, SiteNo)
 sites = unique(sites)
@@ -85,7 +90,47 @@ b = flora[flora$LocationKey %in% dup$LocationKey,] %>%
   dplyr::select(LocationKey, SiteNo, Latitude_GDA94, Longitude_GDA94, DateFirst, DateLast)
 b
 ## *SiteNo changes with the date* but lat/lon and LocationKey don't always.
-### what I should probably do is just generate my own unique key
+
+# 5.1.
+# Extract just the ID variables and Stratum. Look at the length of unique values of each variable for just the Stratum-relevant records
+# SightingKey thrown out because it's the same length as flora
+# LocationKey also out because it doesn't always change with date and I want discrete measurements
+stratdf = flora[flora$Stratum != "-",]
+strata = data.frame(types = c("stratum", "datasetname", "date1", "date2", "lat", "lon", "surveyname", "censuskey", "siteno", "replicateno", "subplotid", "unique_test"), obs = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12))
+strata[1, 2] = nrow(stratdf)
+a = 2
+for (i in c(2, 19, 20, 29, 30, 37, 38, 40:42)){
+  strata[a, 2] = length(unique(stratdf[,i]))
+  a = a+1
+}
+strata
+
+# Determine if any variables equal the length of lat/lon + dates
+strata[12, 2] = nrow(unique(stratdf[c("DateFirst", "DateLast", "Latitude_GDA94", "Longitude_GDA94", "SiteNo")]))
+strata
+## I've gotten quite close here. This combination's length is only 3 short of the length of CensusKey
+
+# Look at CensusKey duplicates
+# Create a unique key for the following variable combinations
+unique_dateplacesite = unique(stratdf[c("DateFirst", "DateLast", "Latitude_GDA94", "Longitude_GDA94", "SiteNo")])
+unique_dateplacesite$ID = seq_len(nrow(unique_kjfIDs))
+# Merge with stratum-relevant records
+stratdf_dup = left_join(stratdf, unique_dateplacesite)
+# Extract duplicates of the new ID
+a = duplicated(stratdf_dup$ID)
+dup = stratdf_dup[a,c(2, 19, 20, 29, 30, 34, 37, 38, 40:42)]
+summary(dup)
+b = count(dup$SiteNo) %>% 
+  top_n(10) %>% 
+  left_join(dup, by = c("x" = "SiteNo"))
+summary(b)
+
+
+# 5.2.
+# Create a unique ID for each combination of lat/lon and the dates.
+
+
+
 
 # 6. ####
 # Check scientific names- are there cases where ScientificName and Assgn_ScientificName do not match?
