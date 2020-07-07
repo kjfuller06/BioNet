@@ -5,6 +5,10 @@
 #   4. Remove all instances except those in which the difference between start and end dates is less than 7 days
 #   5. Remove all instances except those listed as "accepted"
 #   6. Remove all instances except those in which percent cover is less than or equal to 100
+#   7. Generate unique survey IDs. BioNet data contain multiple instances in which replicates and/or subplots were surveyed in a given location, listing exactly the same coordinates on the same day.
+#     -> 7.1. Generate a unique code for every distinct combination of Year + Lat/Lon.
+#     -> 7.2. Generate a unique code for every distinct Biodiversity Assessment Method (BAM) survey.
+#     -> 7.3. The user will need to decide how to address apparent duplicates in a given location.
 
 # assign library path
 .libPaths("C:/Users/90946112/R/win-library/3.6.2")
