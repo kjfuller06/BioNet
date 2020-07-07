@@ -7,6 +7,7 @@
 #     -> 5.1. Look at Stratum to see if any existing ID's map to the ID I want
 ##        -> No ID maps to unique combinations of dates and lat/lon coordinates
 #     -> 5.2. Created unique ID for each combination of dates and lat/lon coordinates, then examine other combinations of variables
+##        -> CONCLUSION: native IDs should not be used for this analysis. Unique IDs for date and location info should be used instead. Duplicates should be randomly selected and the rest thrown out.
 #   6. Determine if the scientific name columns match
 
 # assign library path
@@ -119,7 +120,7 @@ strata
 # Add unique values from 13 to CensusKey and look at duplicates
 # Create a unique key for the following variable combinations
 unique_dps = unique(stratdf[c("DateFirst", "DateLast", "Latitude_GDA94", "Longitude_GDA94", "SiteNo")])
-unique_dps$ID = seq_len(nrow(unique_kjfIDs))
+unique_dps$ID = seq_len(nrow(unique_dps))
 # select only unique_dps and censuskey and identify duplicates of unique_dps in the new df. Then just look at these.
 census_dup = left_join(stratdf, unique_dps) %>% 
   dplyr::select("CensusKey", "ID") %>% 
@@ -130,8 +131,17 @@ b = count(census_dup$ID) %>%
 census_dup = census_dup %>%
   filter(ID == b$x[1] | ID == b$x[2])
 census_dup2 = left_join(census_dup, stratdf)
-write.csv(census_dup2, file = "data samples/CensusKeyduplicates.csv")
-## Need to examine further but it looks like the duplicates are the result of replicates and subplots
+census_dup2_stats = data.frame(types = c("total", names(census_dup2)), obs = seq(1:52))
+census_dup2_stats[1, 2] = nrow(census_dup2)
+a = 2
+for (i in c(1:51)){
+  census_dup2_stats[a, 2] = length(unique(census_dup2[,i]))
+  a = a+1
+}
+census_dup2_stats
+# write.csv(census_dup2, file = "data samples/CensusKeyduplicates.csv")
+## Not a single variable besides EntryOrder has the same number of unique values as CensusKey. And anyway, EntryOrder still doesn't match up with CensusKey.
+## Looks like the duplicates are the result of replicates and subplots
 
 # 6. ####
 # Check scientific names- are there cases where ScientificName and Assgn_ScientificName do not match?
