@@ -146,6 +146,17 @@ census_dup2_stats
 
 # 5.3.
 # Add unique values to flora and examine possible plot info- SiteNo, ReplicateID, SubPlotID and Stratum
+# Create a unique key for the following variable combinations
+unique_dp = unique(stratdf[c("DateFirst", "DateLast", "Latitude_GDA94", "Longitude_GDA94")])
+unique_dp$ID = seq_len(nrow(unique_dp))
+census_dup = left_join(stratdf, unique_dp) %>%
+  dplyr::select("ID","ï..DatasetName", "DateFirst", "DateLast", "LocationKey", "Latitude_GDA94", "Longitude_GDA94", "SurveyName", "CensusKey", "SiteNo", "ReplicateNo", "SubplotID", "Stratum") %>%
+  unique()
+# Summarise by ID
+census_dup_stats = census_dup %>% 
+  dplyr::select("ID", "ï..DatasetName", "LocationKey", "SurveyName", "CensusKey", "SiteNo", "ReplicateNo", "SubplotID", "Stratum")
+with(census_dup_stats[c(1:100),], ave(LocationKey, ID, FUN=function(x) length(unique(x))))
+## GODDAMN FUCKING FAIL
 
 
 # 6. ####
