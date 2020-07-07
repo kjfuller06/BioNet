@@ -6,8 +6,9 @@
 #   5. Examine plot IDs to determine what they actually identify and how many unique values there are for each
 #     -> 5.1. Look at Stratum to see if any existing ID's map to the ID I want
 ##        -> No ID maps to unique combinations of dates and lat/lon coordinates
-#     -> 5.2. Created unique ID for each combination of dates and lat/lon coordinates, then examine other combinations of variables
-##        -> CONCLUSION: native IDs should not be used for this analysis. Unique IDs for date and location info should be used instead. Duplicates should be randomly selected and the rest thrown out.
+#     -> 5.2. Created unique ID for each combination of dates + lat/lon coordinates + SiteNo, then examine other combinations of variables
+##        -> CONCLUSION: native IDs should not be used for this analysis. Unique IDs for date and location info should be used instead. Duplicates should be randomly selected and the rest thrown out. The problem is that I still need to determine what a single survey is so I can select between options.
+#     -> 5.3. Created unique ID for each combination of dates + lat/lon coordinates, then examine the duplicates
 #   6. Determine if the scientific name columns match
 
 # assign library path
@@ -142,6 +143,10 @@ census_dup2_stats
 # write.csv(census_dup2, file = "data samples/CensusKeyduplicates.csv")
 ## Not a single variable besides EntryOrder has the same number of unique values as CensusKey. And anyway, EntryOrder still doesn't match up with CensusKey.
 ## Looks like the duplicates are the result of replicates and subplots
+
+# 5.3.
+# Add unique values to flora and examine possible plot info- SiteNo, ReplicateID, SubPlotID and Stratum
+
 
 # 6. ####
 # Check scientific names- are there cases where ScientificName and Assgn_ScientificName do not match?
