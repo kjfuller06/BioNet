@@ -6,7 +6,8 @@
 #   5. Remove all instances except those in which Accuracy is less than or equal to 10m
 #   6. Remove all instances except those originating since 1990
 #   7. Remove columns SourceCode and ObservationType, as these are no longer relevant. And keep only Eucalypt records
-#   8. Write to csv
+#   8. Clip records using the boundary of NSW
+#   9. Write to csv
 
 # assign library path
 .libPaths("C:/Users/90946112/R/win-library/3.6.2")
@@ -55,5 +56,8 @@ flora = backup %>%
   filter(grepl("Eucalyptus", Assgn_ScientificName, fixed = TRUE))
 
 # 8. ####
+
+
+# 9. ####
 write.csv(flora, "data samples/Eucalyptus_presence.csv")
 
