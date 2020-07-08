@@ -55,5 +55,5 @@ flora = backup %>%
   filter(grepl("Eucalyptus", Assgn_ScientificName, fixed = TRUE))
 
 # 8. ####
-write.csv(flora, "data samples/Eucalyptus_presence_absence.csv")
+write.csv(flora, "data samples/Eucalyptus_presence.csv")
 
