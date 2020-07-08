@@ -181,3 +181,25 @@ mismatch = flora %>%
 summary(mismatch)
 ## scrolled through enough to be confident that Assgn_ScientificName is the accepted/corrected version of whatever was entered in ScientificName
 
+# 7. ####
+# do some mapping with recently cleaned data
+flora <- read.csv("data samples/Eucalyptus_presence.csv", header = TRUE)
+
+# # convert to simple feature, with crs of GDA94 and the attributes being identifications
+map1 = st_as_sf(flora, coords = c("Longitude_GDA94", "Latitude_GDA94"),
+         crs = 4283, agr = "identity")
+map1 = st_transform(map1, crs = 4326)
+# dplyr::filter(ccodes(), NAME %in% "Australia")
+aus = st_as_sf(getData("GADM", country = "AUS", level = 1))
+nsw = aus %>% 
+  filter(NAME_1 == "New South Wales")
+# plot(st_geometry(nsw))
+# plot(map1["ID"], add = TRUE)
+# set tmap mode to interactive viewing
+# tmap_mode("view")
+# plot nz and nz_height
+# qtm(map1, dots.col = "Assgn_ScientificName", max.categories = 216)
+
+
+
+
