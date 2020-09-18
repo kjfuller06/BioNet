@@ -5,7 +5,7 @@
 #   4. Remove all instances except those listed as observation type == "J"- Floristic Record from Systematic Flora Survey
 #   5. Remove all instances except those in which Accuracy is less than or equal to 10m
 #   6. Remove all instances except those originating since 1990
-#   7. Remove columns SourceCode and ObservationType, as these are no longer relevant. And keep only records from target species.
+#   7. Remove columns SourceCode and ObservationType, as these are no longer relevant. Keep only records from target species and join bark traits from Bronwyn Horsey's records to occurrence records.
 #   8. Clip records using the boundary of NSW
 #   9. Write to csv
 
@@ -59,11 +59,12 @@ flora = backup %>%
                 Latitude_GDA94,
                 Longitude_GDA94,
                 Accuracy)
-flora = flora[flora$Assgn_ScientificName %in% sample$species,]
+flora = flora[flora$Assgn_ScientificName %in% sample$species,] %>% 
+  left_join(sample, by = c("Assgn_ScientificName" = "species"))
 
 # 8. ####
-aus = ne_countries(scale = 110, country = "australia", returnclass = "sf") %>% 
-  dplyr::select(geometry)
+# aus = ne_countries(scale = 110, country = "australia", returnclass = "sf") %>% 
+#   dplyr::select(geometry)
 aus = world[world$name_long == "Australia",] %>% 
   dplyr::select(geom)
 
