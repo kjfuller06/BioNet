@@ -5,13 +5,18 @@
 #   4. Remove all instances except those listed as observation type == "J"- Floristic Record from Systematic Flora Survey
 #   5. Remove all instances except those in which Accuracy is less than or equal to 10m
 #   6. Remove all instances except those originating since 1990
-#   7. Remove columns SourceCode and ObservationType, as these are no longer relevant. And keep only Eucalypt records
+#   7. Remove columns SourceCode and ObservationType, as these are no longer relevant. And keep only records from target species.
 #   8. Clip records using the boundary of NSW
 #   9. Write to csv
 
-# assign library path
-.libPaths("C:/Users/90946112/R/win-library/3.6.2")
 library(tidyverse)
+library(rnaturalearth)
+library(sf)
+library(ggplot2)
+library(RColorBrewer)
+library(raster)
+library(spData)
+library(tmap)
 
 # 1. & 2. ####
 flora <- read.csv("data samples/BioNet_allflorasurvey_cleaned.csv", header = TRUE) %>% 
@@ -45,6 +50,7 @@ flora = flora %>%
 
 # 7. ####
 backup = flora
+sample = read.csv("data samples/Horsey_candidate_speciesV.1.csv")
 flora = backup %>% 
   dplyr::select(ID, 
                 Assgn_ScientificName, 
@@ -52,12 +58,28 @@ flora = backup %>%
                 DateLast,
                 Latitude_GDA94,
                 Longitude_GDA94,
-                Accuracy) %>% 
-  filter(grepl("Eucalyptus", Assgn_ScientificName, fixed = TRUE))
+                Accuracy)
+flora = flora[flora$Assgn_ScientificName %in% sample$species,]
 
 # 8. ####
+aus = ne_countries(scale = 110, country = "australia", returnclass = "sf") %>% 
+  dplyr::select(geometry)
+aus = world[world$name_long == "Australia",] %>% 
+  dplyr::select(geom)
 
+flora2 = st_as_sf(flora, coords = c("Longitude_GDA94", "Latitude_GDA94"), crs = 4326) %>% 
+  st_join(aus, join = st_within, left = FALSE)
+
+# ggplot(data = aus)+
+#   geom_sf()+
+#   geom_sf(data = flora2, 
+#           aes(color = Assgn_ScientificName))+
+#   coord_sf(xlim = c(140, 155), ylim = c(-38, -27), expand = FALSE)+
+#   theme(legend.position="none")
+
+# tmap_mode("view")
+# qtm(flora2,
+#     dots.col = "Assgn_ScientificName")
 
 # 9. ####
-write.csv(flora, "data samples/Eucalyptus_presence.csv")
-
+st_write(flora2, "data samples/Horsey_sampleV.1.shp", delete_layer = TRUE)
