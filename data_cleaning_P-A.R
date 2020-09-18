@@ -63,13 +63,36 @@ flora = flora[flora$Assgn_ScientificName %in% sample$species,] %>%
   left_join(sample, by = c("Assgn_ScientificName" = "species"))
 
 # 8. ####
-# aus = ne_countries(scale = 110, country = "australia", returnclass = "sf") %>% 
-#   dplyr::select(geometry)
-aus = world[world$name_long == "Australia",] %>% 
-  dplyr::select(geom)
+# get Australia layer
+aus = getData(name = "GADM", country = "AUS", level = 1, download = TRUE) %>% 
+  st_as_sf()
 
+# create NSW layer with ACT included
+nsw = aus %>% 
+  filter(NAME_1 == "New South Wales" | NAME_1 == "Australian Capital Territory")
+
+# create polygon with an extent that hugs the NSW coastline so we can snip off stray islands
+# points are introduced in sequence as they would be drawn on paper, with the last coordinates repeated. So a square will have 5 points.
+bound = list(c( 154, -38), c(140, -38), c( 140, -28), c( 154, -28), c( 154, -38)) %>%
+  unlist() %>%
+  matrix(ncol = 2,
+         byrow = TRUE) %>% 
+  # first convert to a linestring
+  st_linestring %>% 
+  # then convert to a polygon
+  st_cast('POLYGON') %>% 
+  st_sfc(crs = 4326)
+## check plot
+# ggplot()+
+#   geom_sf(data = bound)+ 
+#   geom_sf(data = nsw)
+
+# now clip the nsw polygon using st_intersection
+bound = st_intersection(nsw, bound)
+
+# lastly, clip flora records by nsw boundary
 flora2 = st_as_sf(flora, coords = c("Longitude_GDA94", "Latitude_GDA94"), crs = 4326) %>% 
-  st_join(aus, join = st_within, left = FALSE)
+  st_join(bound, join = st_within, left = FALSE)
 
 # ggplot(data = aus)+
 #   geom_sf()+
