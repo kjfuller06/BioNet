@@ -107,3 +107,5 @@ flora2 = st_as_sf(flora, coords = c("Longitude_GDA94", "Latitude_GDA94"), crs = 
 
 # 9. ####
 st_write(flora2, "data samples/Horsey_sampleV.1.shp", delete_layer = TRUE)
+st_write(bound, "data samples/NSW_sans_islands.shp", delete_layer = TRUE)
+st_write(aus, "data samples/australia.shp", delete_layer = TRUE)
