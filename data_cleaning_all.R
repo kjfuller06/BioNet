@@ -66,7 +66,7 @@ backup = flora
 # 7. ####
 unique = unique(flora[c("DateFirst", "DateLast", "Latitude_GDA94", "Longitude_GDA94")])
 unique$ID = seq_len(nrow(unique))
-flora = right_join(flora, unique)
+flora = left_join(flora, unique)
 
 # write to csv ####
 write.csv(flora, file = "data samples/BioNet_allflorasurvey_cleaned.csv")
