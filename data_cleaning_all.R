@@ -59,7 +59,7 @@ flora = flora %>%
 
 # 6. ####
 flora = flora %>% 
-  filter(PercentCover <= 100 & PercentCover > 0)
+  filter(PercentCover > 0)
 
 backup = flora
 
