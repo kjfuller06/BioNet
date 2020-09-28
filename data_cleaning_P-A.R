@@ -57,8 +57,8 @@ flora = backup %>%
                 DateFirst,
                 DateLast,
                 Latitude_GDA94,
-                Longitude_GDA94,
-                Accuracy)
+                Longitude_GDA94) %>% 
+  unique()
 flora = flora[flora$Assgn_ScientificName %in% sample$species,] %>% 
   left_join(sample, by = c("Assgn_ScientificName" = "species"))
 
@@ -82,28 +82,13 @@ bound = list(c( 154, -38), c(140, -38), c( 140, -28), c( 154, -28), c( 154, -38)
   # then convert to a polygon
   st_cast('POLYGON') %>% 
   st_sfc(crs = 4326)
-## check plot
-# ggplot()+
-#   geom_sf(data = bound)+ 
-#   geom_sf(data = nsw)
 
 # now clip the nsw polygon using st_intersection
 bound = st_intersection(nsw, bound)
 
-# lastly, clip flora records by nsw boundary
+# lastly, clip flora records by nsw boundary- minus islands
 flora2 = st_as_sf(flora, coords = c("Longitude_GDA94", "Latitude_GDA94"), crs = 4326) %>% 
   st_join(bound, join = st_within, left = FALSE)
-
-# ggplot(data = aus)+
-#   geom_sf()+
-#   geom_sf(data = flora2, 
-#           aes(color = Assgn_ScientificName))+
-#   coord_sf(xlim = c(140, 155), ylim = c(-38, -27), expand = FALSE)+
-#   theme(legend.position="none")
-
-# tmap_mode("view")
-# qtm(flora2,
-#     dots.col = "Assgn_ScientificName")
 
 # 9. ####
 st_write(flora2, "data samples/Horsey_sampleV.1.shp", delete_layer = TRUE)
