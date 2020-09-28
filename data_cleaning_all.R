@@ -4,7 +4,7 @@
 #   3. Remove all instances except those in which Accuracy is less than 1km (1000m according to native units)
 #   4. Remove all instances except those in which the difference between start and end dates is less than 7 days
 #   5. Remove all instances except those listed as "accepted"
-#   6. Remove all instances except those in which percent cover is less than or equal to 100
+#   6. Remove all instances except those in which percent cover is greater than 0%.
 #   7. Generate a unique code for every distinct combination of Year + Lat/Lon. BioNet data contain multiple instances in which replicates and/or subplots were surveyed in a given location, listing exactly the same coordinates on the same day.
 #       -> The user will need to decide how to address apparent duplicates in a given location.
 
