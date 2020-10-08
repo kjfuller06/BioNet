@@ -103,7 +103,8 @@ backup = clean_coordinates(backup,
 # remove failed observations and test columns
 flora = backup %>% 
   filter(.cap == TRUE & .sea == TRUE & .summary == TRUE) %>% 
-  dplyr::select(Assgn_ScientificName,
+  dplyr::select(ID,
+                Assgn_ScientificName,
                 Exotic,
                 NSWStatus,
                 CommStatus,
