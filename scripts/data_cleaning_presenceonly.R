@@ -18,7 +18,7 @@ library(spData)
 library(tmap)
 
 # 1. & 2. ####
-flora <- read.csv("data samples/BioNet_allflorasurvey_cleaned.csv", header = TRUE) %>% 
+flora <- read.csv("outputs/BioNet_allflorasurvey_cleaned.csv", header = TRUE) %>% 
   dplyr::select(ID,
                 Assgn_ScientificName, 
                 DateFirst,
@@ -60,4 +60,4 @@ flora = backup %>%
 
 # 8. ####
 # write to disk for use in other scripts
-write.csv(flora, "data samples/BioNet_allfloralsurvey_cleaned2.csv")
+write.csv(flora, "outputs/BioNet_allfloralsurvey_cleaned2.csv")
