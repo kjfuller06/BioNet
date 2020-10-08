@@ -12,8 +12,8 @@ library(spData)
 #   3. Clip records using the boundary of NSW. Even though the data were already cleaned using CoordinateCleaner to remove points occurring in the ocean, this is still necessary because of stray points outside the state.
 
 # 1. ####
-flora = read.csv("data samples/BioNet_allfloralsurvey_cleaned2.csv")
-sample = read.csv("data samples/Horsey_candidate_speciesV.2.csv")
+flora = read.csv("outputs/BioNet_allfloralsurvey_cleaned2.csv")
+sample = read.csv("data/Horsey_candidate_speciesV.2.csv")
 
 # 2. ####
 flora = flora[flora$Assgn_ScientificName %in% sample$species,] %>% 
@@ -49,6 +49,6 @@ flora2 = st_as_sf(flora, coords = c("Longitude_GDA94", "Latitude_GDA94"), crs = 
 flora2 = st_join(flora2, bound, join = st_within, left = FALSE)
 
 # 10. ####
-st_write(flora2, "data samples/Horsey_sampleV.2.shp", delete_layer = TRUE)
-st_write(bound, "data samples/NSW_sans_islands.shp", delete_layer = TRUE)
-st_write(aus, "data samples/australia.shp", delete_layer = TRUE)
+st_write(flora2, "outputs/Horsey_sampleV.2.shp", delete_layer = TRUE)
+st_write(bound, "outputs/NSW_sans_islands.shp", delete_layer = TRUE)
+st_write(aus, "outputs/australia.shp", delete_layer = TRUE)
