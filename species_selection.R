@@ -1,3 +1,4 @@
+# This script is for selecting species for analysis from all cleaned BioNet species records.
 library(tidyverse)
 library(rnaturalearth)
 library(sf)
@@ -8,7 +9,7 @@ library(spData)
 
 #   1. Load datasets
 #   2. Keep only records from target species and join bark traits from Bronwyn Horsey's records to occurrence records.
-#   3. Clip records using the boundary of NSW
+#   3. Clip records using the boundary of NSW. Even though the data were already cleaned using CoordinateCleaner to remove points occurring in the ocean, this is still necessary because of stray points outside the state.
 
 # 1. ####
 flora = read.csv("data samples/BioNet_allfloralsurvey_cleaned2.csv")
