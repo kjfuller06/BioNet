@@ -23,7 +23,7 @@ library(CoordinateCleaner)
 library(rnaturalearth)
 
 # 1. & 2. ####
-flora <- read.delim("data samples/BioNet_allflorasurvey.txt", header = TRUE, sep = "\t", dec = ".") %>%
+flora <- read.delim("data/BioNet_allflorasurvey.txt", header = TRUE, sep = "\t", dec = ".") %>%
   dplyr::select(Assgn_ScientificName,
                 Exotic,
                 NSWStatus,
@@ -128,5 +128,5 @@ flora = backup %>%
                 UpperHeight)
 
 # 9. ####
-write.csv(flora, file = "data samples/BioNet_allflorasurvey_cleaned.csv")
+write.csv(flora, file = "outputs/BioNet_allflorasurvey_cleaned.csv")
 
