@@ -19,7 +19,7 @@ library(tmap)
 
 # 1. & 2. ####
 flora <- read.csv("data samples/BioNet_allflorasurvey_cleaned.csv", header = TRUE) %>% 
-  dplyr::select(ID, 
+  dplyr::select(ID,
                 Assgn_ScientificName, 
                 DateFirst,
                 DateLast,
