@@ -13,11 +13,11 @@ library(spData)
 
 # 1. ####
 flora = read.csv("outputs/BioNet_allfloralsurvey_cleaned2.csv")
-sample = read.csv("data/Horsey_candidate_speciesV.2.csv")
+sample = read.csv("data/Horsey_candidate_speciesV.3.csv")
 
 # 2. ####
-flora = flora[flora$Assgn_ScientificName %in% sample$species,] %>% 
-  left_join(sample, by = c("Assgn_ScientificName" = "species"))
+flora = flora[flora$Assgn_ScientificName %in% sample$BioNetspecies,] %>% 
+  left_join(sample, by = c("Assgn_ScientificName" = "BioNetspecies"))
 
 # 8. ####
 # get Australia layer
@@ -49,6 +49,6 @@ flora2 = st_as_sf(flora, coords = c("Longitude_GDA94", "Latitude_GDA94"), crs = 
 flora2 = st_join(flora2, bound, join = st_within, left = FALSE)
 
 # 10. ####
-st_write(flora2, "outputs/Horsey_sampleV.2.shp", delete_layer = TRUE)
-st_write(bound, "outputs/NSW_sans_islands.shp", delete_layer = TRUE)
-st_write(aus, "outputs/australia.shp", delete_layer = TRUE)
+st_write(flora2, "outputs/Horsey_sampleV.3.shp", delete_layer = TRUE)
+# st_write(bound, "outputs/NSW_sans_islands.shp", delete_layer = TRUE)
+# st_write(aus, "outputs/australia.shp", delete_layer = TRUE)
