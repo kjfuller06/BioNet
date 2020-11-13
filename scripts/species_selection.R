@@ -13,7 +13,7 @@ library(spData)
 
 # 1. ####
 flora = read.csv("outputs/BioNet_allfloralsurvey_cleaned2.csv")
-sample = read.csv("data/Horsey_candidate_speciesV.3.csv")
+sample = read.csv("data/Horsey_candidate_speciesV.4.csv")
 
 # 2. ####
 flora = flora[flora$Assgn_ScientificName %in% sample$BioNetspecies,] %>% 
@@ -46,9 +46,9 @@ bound = st_intersection(nsw, bound)
 
 # lastly, clip flora records by nsw boundary- minus islands
 flora2 = st_as_sf(flora, coords = c("Longitude_GDA94", "Latitude_GDA94"), crs = 4326)
-flora2 = st_join(flora2, bound, join = st_within, left = FALSE)
+flora2 = flora2[bound, ]
 
 # 10. ####
-st_write(flora2, "outputs/Horsey_sampleV.3.shp", delete_layer = TRUE)
+st_write(flora2, "outputs/Horsey_sampleV.4.shp", delete_layer = TRUE)
 # st_write(bound, "outputs/NSW_sans_islands.shp", delete_layer = TRUE)
 # st_write(aus, "outputs/australia.shp", delete_layer = TRUE)
