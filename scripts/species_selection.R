@@ -8,16 +8,22 @@ library(raster)
 library(spData)
 
 #   1. Load datasets
-#   2. Keep only records from target species and join bark traits from Bronwyn Horsey's records to occurrence records.
+#   2. Keep only records from target species and join bark traits to occurrence records.
 #   3. Clip records using the boundary of NSW. Even though the data were already cleaned using CoordinateCleaner to remove points occurring in the ocean, this is still necessary because of stray points outside the state.
 
 # 1. ####
 flora = read.csv("outputs/BioNet_allfloralsurvey_cleaned2.csv")
-sample = read.csv("data/Horsey_candidate_speciesV.4.csv")
+sample = read.csv("data/Horsey_candidate_speciesV.5.csv")
+traits = read.csv("data/Allspecies_traitsV.5.csv")
 
 # 2. ####
-flora = flora[flora$Assgn_ScientificName %in% sample$BioNetspecies,] %>% 
-  left_join(sample, by = c("Assgn_ScientificName" = "BioNetspecies"))
+flora = flora[flora$Assgn_ScientificName %in% sample$Bionet_assigned,] %>% 
+  left_join(sample, by = c("Assgn_ScientificName" = "Bionet_assigned")) %>% 
+  dplyr::select(-Assgn_ScientificName,
+         -BioNet,
+         -X) %>% 
+  unique() %>% 
+  left_join(traits)
 
 # 8. ####
 # get Australia layer
@@ -49,6 +55,6 @@ flora2 = st_as_sf(flora, coords = c("Longitude_GDA94", "Latitude_GDA94"), crs = 
 flora2 = flora2[bound, ]
 
 # 10. ####
-st_write(flora2, "outputs/Horsey_sampleV.4.shp", delete_layer = TRUE)
+st_write(flora2, "outputs/Horsey_sampleV.5.shp", delete_layer = TRUE)
 # st_write(bound, "outputs/NSW_sans_islands.shp", delete_layer = TRUE)
 # st_write(aus, "outputs/australia.shp", delete_layer = TRUE)
