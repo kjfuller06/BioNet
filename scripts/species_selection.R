@@ -13,8 +13,8 @@ library(spData)
 
 # 1. ####
 flora = read.csv("outputs/BioNet_allfloralsurvey_cleaned2.csv")
-sample = read.csv("data/Horsey_candidate_speciesV.5.csv")
-traits = read.csv("data/Allspecies_traitsV.5.csv")
+sample = read.csv("data/Candidate_speciesV.1.csv")
+traits = read.csv("data/Allspecies_traitsV.1.csv")
 
 # 2. ####
 flora = flora[flora$Assgn_ScientificName %in% sample$Bionet_assigned,] %>% 
@@ -22,8 +22,16 @@ flora = flora[flora$Assgn_ScientificName %in% sample$Bionet_assigned,] %>%
   dplyr::select(-Assgn_ScientificName,
          -BioNet,
          -X) %>% 
-  unique() %>% 
-  left_join(traits)
+  unique()
+trees = traits %>% 
+  filter(mallee != "mallee")
+flora2 = flora %>% 
+  left_join(trees)
+
+mallees = traits %>% 
+  filter(mallee == "mallee")
+mallees2 = flora[flora$Nicolle19Name %in% mallees$Nicolle19Name,] %>% 
+  left_join(mallees)
 
 # 8. ####
 # get Australia layer
@@ -51,10 +59,13 @@ bound = list(c( 154, -38), c(140, -38), c( 140, -28), c( 154, -28), c( 154, -38)
 bound = st_intersection(nsw, bound)
 
 # lastly, clip flora records by nsw boundary- minus islands
-flora2 = st_as_sf(flora, coords = c("Longitude_GDA94", "Latitude_GDA94"), crs = 4326)
+flora2 = st_as_sf(flora2, coords = c("Longitude_GDA94", "Latitude_GDA94"), crs = 4326)
 flora2 = flora2[bound, ]
+mallees2 = st_as_sf(mallees2, coords = c("Longitude_GDA94", "Latitude_GDA94"), crs = 4326)
+mallees2 = mallees2[bound, ]
 
 # 10. ####
-st_write(flora2, "outputs/Horsey_sampleV.5.shp", delete_layer = TRUE)
+st_write(flora2, "outputs/species_sampleV.1.shp", delete_layer = TRUE)
+st_write(mallees2, "outputs/species_sampleV.1_mallees.shp", delete_layer = TRUE)
 # st_write(bound, "outputs/NSW_sans_islands.shp", delete_layer = TRUE)
 # st_write(aus, "outputs/australia.shp", delete_layer = TRUE)
