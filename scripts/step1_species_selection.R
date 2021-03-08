@@ -10,8 +10,8 @@ library(spData)
 #   1. Load datasets
 #   2. Keep only records from target species and reassign any growth forms to NA that are not either "tree" or "mallee"
 #   3. Create trait dataframes that exclude 1) mallee-specific traits and then 2) tree-specific traits
-#   3. Join tree bark traits to occurrence records
-#   4. Join mallee traits to occurrent records and combine datasets
+#   3. Join tree bark traits to non-mallee occurrence records
+#   4. Join mallee traits to mallee occurrent records and combine datasets
 #   5. Clip records using the boundary of NSW. Even though the data were already cleaned using CoordinateCleaner to remove points occurring in the ocean, this is still necessary because of stray points outside the state.
 
 # 1. ####
