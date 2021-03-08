@@ -5,6 +5,11 @@
 #   4. Remove all instances except those listed as observation type == "J"- Floristic Record from Systematic Flora Survey
 #   5. Remove all instances except those in which Accuracy is less than or equal to 10m
 #   6. Remove all instances except those originating since 1990
+#   7. Assign growth form as:
+#         -"" for not measured
+#         -"T" for tree
+#         -"M", "S", "U", "Y" or "Z" indicating mallee or shrub status 
+#         -(mallee, shrub, samphire shrub, mallee shrub and heath shrub, respectively)
 #   7. Remove columns SourceCode and ObservationType, as these are no longer relevant and remove duplicate records.
 #   8. Write to disk
 
@@ -27,7 +32,8 @@ flora <- read.csv("outputs/BioNet_allflorasurvey_cleaned.csv", header = TRUE) %>
                 ObservationType,
                 Latitude_GDA94,
                 Longitude_GDA94,
-                Accuracy)
+                Accuracy,
+                GrowthForm)
 
 # 3. ####
 flora = flora %>% 
@@ -48,6 +54,10 @@ flora = flora %>%
   filter(DateFirst > 1989-12-31)
 
 # 7. ####
+flora$GrowthForm[flora$GrowthForm == "T"] = "Tree"
+flora$GrowthForm[flora$GrowthForm == "M" | flora$GrowthForm == "S" | flora$GrowthForm == "U" | flora$GrowthForm == "Y" | flora$GrowthForm == "Z"] = "Mallee"
+
+# 8. ####
 backup = flora
 flora = backup %>% 
   dplyr::select(ID, 
@@ -55,9 +65,10 @@ flora = backup %>%
                 DateFirst,
                 DateLast,
                 Latitude_GDA94,
-                Longitude_GDA94) %>% 
+                Longitude_GDA94,
+                GrowthForm) %>% 
   unique()
 
-# 8. ####
+# 9. ####
 # write to disk for use in other scripts
 write.csv(flora, "outputs/BioNet_allfloralsurvey_cleaned2.csv")
