@@ -8,8 +8,11 @@ library(raster)
 library(spData)
 
 #   1. Load datasets
-#   2. Keep only records from target species and join bark traits to occurrence records.
-#   3. Clip records using the boundary of NSW. Even though the data were already cleaned using CoordinateCleaner to remove points occurring in the ocean, this is still necessary because of stray points outside the state.
+#   2. Keep only records from target species and reassign any growth forms to NA that are not either "tree" or "mallee"
+#   3. Create trait dataframes that exclude 1) mallee-specific traits and then 2) tree-specific traits
+#   3. Join tree bark traits to occurrence records
+#   4. Join mallee traits to occurrent records and combine datasets
+#   5. Clip records using the boundary of NSW. Even though the data were already cleaned using CoordinateCleaner to remove points occurring in the ocean, this is still necessary because of stray points outside the state.
 
 # 1. ####
 flora = read.csv("outputs/BioNet_allfloralsurvey_cleaned2.csv")
@@ -23,17 +26,50 @@ flora = flora[flora$Assgn_ScientificName %in% sample$Bionet_assigned,] %>%
          -BioNet,
          -X) %>% 
   unique()
+flora$GrowthForm[flora$GrowthForm != "Mallee" & flora$GrowthForm != "Tree" & flora$GrowthForm != ""] = ""
+
+# 3. ####
+# select traits that exclude:
+#   -"mallee"- the mallee form of a species that can be either tree or mallee
+#   -"yes"- mallee-only species
 trees = traits %>% 
-  filter(mallee != "mallee")
-flora2 = flora %>% 
-  left_join(trees)
-
+  filter(mallee != "mallee" & mallee != "yes")
+# select traits that exclude:
+#   -"tree"- the tree form of a species that can be either tree or mallee
+#   -"no"- tree-only species
 mallees = traits %>% 
-  filter(mallee == "mallee")
-mallees2 = flora[flora$Nicolle19Name %in% mallees$Nicolle19Name,] %>% 
-  left_join(mallees)
+  filter(mallee != "tree" & mallee != "no")
 
-# 8. ####
+# 4. ####
+flora2 = flora %>%
+  filter(GrowthForm != "Mallee") %>% 
+  full_join(trees)
+flora2 = flora2 %>% 
+  filter(!is.na(ID))
+correction = flora2[is.na(flora2$mallee) == TRUE,] %>% 
+  dplyr::select(-Horseybark1_final,
+                -Horseybark2_final,
+                -forming.ribbons_final,
+                -mallee)
+correction = inner_join(correction, mallees)
+flora2 = rbind(flora2[is.na(flora2$mallee) == FALSE,], correction)
+
+# 4. ####
+flora3 = flora %>% 
+  filter(GrowthForm == "Mallee") %>% 
+  left_join(mallees)
+correction = flora3[is.na(flora3$mallee) == TRUE,] %>% 
+  dplyr::select(-Horseybark1_final,
+                -Horseybark2_final,
+                -forming.ribbons_final,
+                -mallee)
+correction = inner_join(correction, trees)
+flora3 = rbind(flora3[is.na(flora3$mallee) == FALSE,], correction)
+flora = rbind(flora2, flora3) %>% 
+  unique()
+## 21,927 records
+
+# 5. ####
 # get Australia layer
 aus = getData(name = "GADM", country = "AUS", level = 1, download = TRUE) %>% 
   st_as_sf()
@@ -59,13 +95,10 @@ bound = list(c( 154, -38), c(140, -38), c( 140, -28), c( 154, -28), c( 154, -38)
 bound = st_intersection(nsw, bound)
 
 # lastly, clip flora records by nsw boundary- minus islands
-flora2 = st_as_sf(flora2, coords = c("Longitude_GDA94", "Latitude_GDA94"), crs = 4326)
+flora2 = st_as_sf(flora, coords = c("Longitude_GDA94", "Latitude_GDA94"), crs = 4326)
 flora2 = flora2[bound, ]
-mallees2 = st_as_sf(mallees2, coords = c("Longitude_GDA94", "Latitude_GDA94"), crs = 4326)
-mallees2 = mallees2[bound, ]
 
 # 10. ####
 st_write(flora2, "outputs/species_sampleV.1.shp", delete_layer = TRUE)
-st_write(mallees2, "outputs/species_sampleV.1_mallees.shp", delete_layer = TRUE)
 # st_write(bound, "outputs/NSW_sans_islands.shp", delete_layer = TRUE)
 # st_write(aus, "outputs/australia.shp", delete_layer = TRUE)
